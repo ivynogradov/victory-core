@@ -5,7 +5,7 @@ import React from "react";
 
 describe("getInitialTransitionState", () => {
   const makeChild = (data) => {
-    return React.createElement("div", { data });
+    return <div data={data} />;
   };
 
   it("returns a 'falsey' transition object if children are not given", () => {

@@ -4,92 +4,86 @@ import PropTypes from "prop-types";
 import { Data } from "src/index";
 import { defaults, get, reduce, map } from "lodash";
 
-class MockDataComponent extends React.Component {
-  static displayName = "MockDataComponent";
-  static role = "dataComponent";
+const MockDataComponent = props => {
+  const { datum: { x, y }, events, style } = props;
+  return (
+    <p style={style} {...events}>
+      `${x}: ${y}`
+    </p>
+  );
+};
 
-  static propTypes = {
-    datum: PropTypes.object,
-    events: PropTypes.object,
-    style: PropTypes.object
-  };
+MockDataComponent.displayName = "MockDataComponent";
+MockDataComponent.role = "dataComponent";
 
-  render() {
-    const { datum: { x, y }, events, style } = this.props;
-    return (
-      <p style={style} {...events}>
-        `${x}: ${y}`
-      </p>
-    );
-  }
-}
+MockDataComponent.propTypes = {
+  datum: PropTypes.object,
+  events: PropTypes.object,
+  style: PropTypes.object
+};
 
-class MockLabel extends React.Component {
-  static displayName = "MockLabel";
-  static role = "label";
+const MockLabel = props => {
+  const { text } = props;
 
-  static propTypes = {
-    text: PropTypes.string
-  };
+  return (
+    <p>`${text}`</p>
+  );
+};
 
-  render() {
-    const { text } = this.props;
+MockLabel.displayName = "MockLabel";
+MockLabel.role = "label";
 
-    return (
-      <p>`${text}`</p>
-    );
-  }
-}
+MockLabel.propTypes = {
+  text: PropTypes.string
+};
 
-class MockVictoryComponent extends React.Component {
-  static displayName = "MockVictoryComponent";
-  static role = "chart";
+const MockVictoryComponent = props => {
+  const props = defaults({}, props, this.defaultProps);
+  const { dataComponent, labelComponent, groupComponent } = props;
 
-  static defaultProps = {
-    dataComponent: <MockDataComponent/>,
-    labelComponent: <MockLabel/>,
-    groupComponent: <div/>
-  };
+  const dataComponents = map(this.dataKeys, (_key, index) => {
+    const dataProps = this.getComponentProps(dataComponent, "data", index);
+    return React.cloneElement(dataComponent, dataProps);
+  });
 
-  static getBaseProps = (props) => {
-    const data = Data.getData(props);
-    const childProps = reduce(data, (accum, datum, index) => {
-      return defaults({}, accum, {
-        [index]: {
-          data: {
-            index,
-            datum,
-            data,
-            style: {}
-          }
+  const labelComponents = map(this.dataKeys, (_key, index) => {
+    const labelProps = this.getComponentProps(labelComponent, "labels", index);
+    return get(labelProps, "text") ? React.cloneElement(labelComponent, labelProps) : undefined;
+  });
+
+  return React.cloneElement(groupComponent, {}, ...dataComponents, ...labelComponents);
+};
+
+MockVictoryComponent.displayName = "MockVictoryComponent";
+MockVictoryComponent.role = "chart";
+
+MockVictoryComponent.defaultProps = {
+  dataComponent: <MockDataComponent/>,
+  labelComponent: <MockLabel/>,
+  groupComponent: <div/>
+};
+
+MockVictoryComponent.getBaseProps = (props) => {
+  const data = Data.getData(props);
+  const childProps = reduce(data, (accum, datum, index) => {
+    return defaults({}, accum, {
+      [index]: {
+        data: {
+          index,
+          datum,
+          data,
+          style: {}
         }
-      });
-    }, {});
+      }
+    });
+  }, {});
 
-    return {
-      parent: {
-        data
-      },
-      ...childProps
-    };
+  return {
+    parent: {
+      data
+    },
+    ...childProps
   };
-
-  render() {
-    const props = defaults({}, this.props, this.defaultProps);
-    const { dataComponent, labelComponent, groupComponent } = props;
-
-    const dataComponents = map(this.dataKeys, (_key, index) => {
-      const dataProps = this.getComponentProps(dataComponent, "data", index);
-      return React.cloneElement(dataComponent, dataProps);
-    });
-
-    const labelComponents = map(this.dataKeys, (_key, index) => {
-      const labelProps = this.getComponentProps(labelComponent, "labels", index);
-      return get(labelProps, "text") ? React.cloneElement(labelComponent, labelProps) : undefined;
-    });
-
-    return React.cloneElement(groupComponent, {}, ...dataComponents, ...labelComponents);
-  }
-}
+};
 
 export { MockVictoryComponent, MockLabel, MockDataComponent };

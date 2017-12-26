@@ -4,24 +4,24 @@ import Log from "../victory-util/log";
 import { defaults, omit } from "lodash";
 
 export default class VictoryPortal extends React.Component {
-  static displayName = "VictoryPortal";
-
-  static role = "portal";
-
-  static propTypes = {
-    children: PropTypes.node,
-    groupComponent: PropTypes.element
+  static contextTypes = {
+    portalDeregister: PropTypes.func,
+    portalRegister: PropTypes.func,
+    portalUpdate: PropTypes.func
   };
 
   static defaultProps = {
     groupComponent: <g/>
   };
 
-  static contextTypes = {
-    portalDeregister: PropTypes.func,
-    portalRegister: PropTypes.func,
-    portalUpdate: PropTypes.func
+  static displayName = "VictoryPortal";
+
+  static propTypes = {
+    children: PropTypes.node,
+    groupComponent: PropTypes.element
   };
+
+  static role = "portal";
 
   componentDidMount() {
     if (!this.checkedContext) {

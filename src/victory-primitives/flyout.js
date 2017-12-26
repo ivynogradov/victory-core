@@ -57,39 +57,12 @@ export default class Flyout extends React.Component {
     return false;
   }
 
-  calculateAttributes(props) {
-    const { datum, active, style } = props;
-    return {
-      style: Helpers.evaluateStyle(style, datum, active),
-      path: this.getFlyoutPath(props)
-    };
+  getFlyoutPath(props) {
+    const orientation = props.orientation || "top";
+    return orientation === "left" || orientation === "right" ?
+      this.getHorizontalPath(props) : this.getVerticalPath(props);
   }
 
-
-  getVerticalPath(props) {
-    const { pointerLength, pointerWidth, cornerRadius, orientation, width, height } = props;
-    const sign = orientation === "top" ? 1 : -1;
-    const x = props.x + (props.dx || 0);
-    const y = props.y - sign * (props.dy || 0);
-    const pointerEdge = y - (sign * pointerLength);
-    const oppositeEdge = y - (sign * pointerLength) - (sign * height);
-    const rightEdge = x + (width / 2);
-    const leftEdge = x - (width / 2);
-    const direction = orientation === "top" ? "0 0 0" : "0 0 1";
-    const arc = `${cornerRadius} ${cornerRadius} ${direction}`;
-    return `M ${x - pointerWidth / 2}, ${pointerEdge}
-      L ${x}, ${y}
-      L ${x + pointerWidth / 2}, ${pointerEdge}
-      L ${rightEdge - cornerRadius}, ${pointerEdge}
-      A ${arc} ${rightEdge}, ${pointerEdge - sign * cornerRadius}
-      L ${rightEdge}, ${oppositeEdge + sign * cornerRadius}
-      A ${arc} ${rightEdge - cornerRadius}, ${oppositeEdge}
-      L ${leftEdge + cornerRadius}, ${oppositeEdge}
-      A ${arc} ${leftEdge}, ${oppositeEdge + sign * cornerRadius}
-      L ${leftEdge}, ${pointerEdge - sign * cornerRadius}
-      A ${arc} ${leftEdge + cornerRadius}, ${pointerEdge}
-      z`;
-  }
 
   getHorizontalPath(props) {
     const { pointerLength, pointerWidth, cornerRadius, orientation, width, height } = props;
@@ -116,10 +89,37 @@ export default class Flyout extends React.Component {
       z`;
   }
 
-  getFlyoutPath(props) {
-    const orientation = props.orientation || "top";
-    return orientation === "left" || orientation === "right" ?
-      this.getHorizontalPath(props) : this.getVerticalPath(props);
+  getVerticalPath(props) {
+    const { pointerLength, pointerWidth, cornerRadius, orientation, width, height } = props;
+    const sign = orientation === "top" ? 1 : -1;
+    const x = props.x + (props.dx || 0);
+    const y = props.y - sign * (props.dy || 0);
+    const pointerEdge = y - (sign * pointerLength);
+    const oppositeEdge = y - (sign * pointerLength) - (sign * height);
+    const rightEdge = x + (width / 2);
+    const leftEdge = x - (width / 2);
+    const direction = orientation === "top" ? "0 0 0" : "0 0 1";
+    const arc = `${cornerRadius} ${cornerRadius} ${direction}`;
+    return `M ${x - pointerWidth / 2}, ${pointerEdge}
+      L ${x}, ${y}
+      L ${x + pointerWidth / 2}, ${pointerEdge}
+      L ${rightEdge - cornerRadius}, ${pointerEdge}
+      A ${arc} ${rightEdge}, ${pointerEdge - sign * cornerRadius}
+      L ${rightEdge}, ${oppositeEdge + sign * cornerRadius}
+      A ${arc} ${rightEdge - cornerRadius}, ${oppositeEdge}
+      L ${leftEdge + cornerRadius}, ${oppositeEdge}
+      A ${arc} ${leftEdge}, ${oppositeEdge + sign * cornerRadius}
+      L ${leftEdge}, ${pointerEdge - sign * cornerRadius}
+      A ${arc} ${leftEdge + cornerRadius}, ${pointerEdge}
+      z`;
+  }
+
+  calculateAttributes(props) {
+    const { datum, active, style } = props;
+    return {
+      style: Helpers.evaluateStyle(style, datum, active),
+      path: this.getFlyoutPath(props)
+    };
   }
 
   // Overridden in victory-core-native

@@ -7,6 +7,10 @@ import { assign } from "lodash";
 import CommonProps from "./common-props";
 
 export default class Candle extends React.Component {
+  static defaultProps = {
+    groupComponent: <g/>
+  };
+
   static propTypes = {
     ...CommonProps,
     candleHeight: PropTypes.number,
@@ -22,10 +26,6 @@ export default class Candle extends React.Component {
     y1: PropTypes.number,
     y2: PropTypes.number
   }
-
-  static defaultProps = {
-    groupComponent: <g/>
-  };
 
   componentWillMount() {
     const { style, candleWidth } = this.calculateAttributes(this.props);
@@ -55,24 +55,6 @@ export default class Candle extends React.Component {
     return false;
   }
 
-  calculateAttributes(props) {
-    const { data, datum, active, width } = props;
-    const style = Helpers.evaluateStyle(assign({ stroke: "black" }, props.style), datum, active);
-    const padding = props.padding.left || props.padding;
-    const candleWidth = style.width || 0.5 * (width - 2 * padding) / data.length;
-    return { style, candleWidth };
-  }
-
-  // Overridden in victory-core-native
-  renderWick(wickProps) {
-    return <line {...wickProps}/>;
-  }
-
-  // Overridden in victory-core-native
-  renderCandle(candleProps) {
-    return <rect {...candleProps}/>;
-  }
-
   getCandleProps(props) {
     const { candleHeight, x, y, events, role, className } = props;
     const shapeRendering = props.shapeRendering || "auto";
@@ -91,6 +73,24 @@ export default class Candle extends React.Component {
       { x1: x, x2: x, y1, y2, style: this.style, role, shapeRendering, className },
       events
     );
+  }
+
+  calculateAttributes(props) {
+    const { data, datum, active, width } = props;
+    const style = Helpers.evaluateStyle(assign({ stroke: "black" }, props.style), datum, active);
+    const padding = props.padding.left || props.padding;
+    const candleWidth = style.width || 0.5 * (width - 2 * padding) / data.length;
+    return { style, candleWidth };
+  }
+
+  // Overridden in victory-core-native
+  renderCandle(candleProps) {
+    return <rect {...candleProps}/>;
+  }
+
+  // Overridden in victory-core-native
+  renderWick(wickProps) {
+    return <line {...wickProps}/>;
   }
 
   render() {

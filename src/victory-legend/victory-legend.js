@@ -25,9 +25,26 @@ const defaultLegendData = [
 ];
 
 class VictoryLegend extends React.Component {
+  static defaultProps = {
+    borderComponent: <Border/>,
+    data: defaultLegendData,
+    containerComponent: <VictoryContainer/>,
+    dataComponent: <Point/>,
+    groupComponent: <g/>,
+    labelComponent: <VictoryLabel/>,
+    standalone: true,
+    theme: VictoryTheme.grayscale,
+    titleComponent: <VictoryLabel/>
+  };
+
   static displayName = "VictoryLegend";
 
-  static role = "legend";
+  static expectedComponents = [
+    "borderComponent", "containerComponent", "dataComponent",
+    "groupComponent", "labelComponent", "titleComponent"
+  ];
+
+  static getBaseProps = partialRight(getBaseProps, fallbackProps);
 
   static propTypes = {
     borderComponent: PropTypes.element,
@@ -119,24 +136,7 @@ class VictoryLegend extends React.Component {
     x: CustomPropTypes.nonNegative,
     y: CustomPropTypes.nonNegative
   };
-
-  static defaultProps = {
-    borderComponent: <Border/>,
-    data: defaultLegendData,
-    containerComponent: <VictoryContainer/>,
-    dataComponent: <Point/>,
-    groupComponent: <g/>,
-    labelComponent: <VictoryLabel/>,
-    standalone: true,
-    theme: VictoryTheme.grayscale,
-    titleComponent: <VictoryLabel/>
-  };
-
-  static getBaseProps = partialRight(getBaseProps, fallbackProps);
-  static expectedComponents = [
-    "borderComponent", "containerComponent", "dataComponent",
-    "groupComponent", "labelComponent", "titleComponent"
-  ];
+  static role = "legend";
 
   renderChildren(props) {
     const { dataComponent, labelComponent, title } = props;

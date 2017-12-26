@@ -42,21 +42,6 @@ export default class Voronoi extends React.Component {
     return false;
   }
 
-  calculateAttributes(props) {
-    const { style, datum, active } = props;
-    return {
-      style: Helpers.evaluateStyle(style, datum, active),
-      circle: this.getCirclePath(props),
-      voronoi: this.getVoronoiPath(props)
-    };
-  }
-
-  getVoronoiPath(props) {
-    const { polygon } = props;
-    return Array.isArray(polygon) && polygon.length ?
-      `M ${props.polygon.join("L")} Z` : "";
-  }
-
   getCirclePath(props) {
     if (!props.size) {
       return null;
@@ -66,6 +51,21 @@ export default class Voronoi extends React.Component {
     return `M ${x}, ${y} m ${-size}, 0
       a ${size}, ${size} 0 1,0 ${size * 2},0
       a ${size}, ${size} 0 1,0 ${-size * 2},0`;
+  }
+
+  getVoronoiPath(props) {
+    const { polygon } = props;
+    return Array.isArray(polygon) && polygon.length ?
+      `M ${props.polygon.join("L")} Z` : "";
+  }
+
+  calculateAttributes(props) {
+    const { style, datum, active } = props;
+    return {
+      style: Helpers.evaluateStyle(style, datum, active),
+      circle: this.getCirclePath(props),
+      voronoi: this.getVoronoiPath(props)
+    };
   }
 
   // Overridden in victory-core-native

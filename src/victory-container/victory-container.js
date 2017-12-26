@@ -6,8 +6,25 @@ import Portal from "../victory-portal/portal";
 import Timer from "../victory-util/timer";
 
 export default class VictoryContainer extends React.Component {
+  static childContextTypes = {
+    portalUpdate: PropTypes.func,
+    portalRegister: PropTypes.func,
+    portalDeregister: PropTypes.func,
+    getTimer: PropTypes.func
+  }
+
+  static contextTypes = {
+    getTimer: PropTypes.func
+  }
+
+  static defaultProps = {
+    className: "VictoryContainer",
+    portalComponent: <Portal/>,
+    portalZIndex: 99,
+    responsive: true
+  }
+
   static displayName = "VictoryContainer";
-  static role = "container";
   static propTypes = {
     children: PropTypes.oneOfType([
       PropTypes.arrayOf(PropTypes.node),
@@ -30,27 +47,10 @@ export default class VictoryContainer extends React.Component {
     width: CustomPropTypes.nonNegative
   }
 
-  static defaultProps = {
-    className: "VictoryContainer",
-    portalComponent: <Portal/>,
-    portalZIndex: 99,
-    responsive: true
-  }
-
-  static contextTypes = {
-    getTimer: PropTypes.func
-  }
-
-  static childContextTypes = {
-    portalUpdate: PropTypes.func,
-    portalRegister: PropTypes.func,
-    portalDeregister: PropTypes.func,
-    getTimer: PropTypes.func
-  }
+  static role = "container";
 
   constructor(props) {
     super(props);
-    this.getTimer = this.getTimer.bind(this);
     this.containerId = !isObject(props) || typeof props.containerId === "undefined" ?
       uniqueId("victory-container-") : props.containerId;
   }
@@ -80,7 +80,16 @@ export default class VictoryContainer extends React.Component {
     }
   }
 
-  getTimer() {
+  // overridden in custom containers
+  getChildren(props) {
+    return props.children;
+  }
+
+  getIdForElement(elementName) {
+    return `${this.containerId}-${elementName}`;
+  }
+
+  getTimer = () => {
     if (this.context.getTimer) {
       return this.context.getTimer();
     }
@@ -88,16 +97,7 @@ export default class VictoryContainer extends React.Component {
       this.timer = new Timer();
     }
     return this.timer;
-  }
-
-  getIdForElement(elementName) {
-    return `${this.containerId}-${elementName}`;
-  }
-
-  // overridden in custom containers
-  getChildren(props) {
-    return props.children;
-  }
+  };
 
   renderContainer(props, svgProps, style) {
     const {

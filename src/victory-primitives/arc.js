@@ -35,11 +35,6 @@ export default class Arc extends React.Component {
     return false;
   }
 
-  getStyle(props) {
-    const { style, datum, active } = props;
-    return Helpers.evaluateStyle(assign({ stroke: "black", fill: "none" }, style), datum, active);
-  }
-
   getArcPath(props) {
     const { cx, cy, r, startAngle, endAngle, closedPath } = props;
     // Always draw the path as two arcs so that complete circles may be rendered.
@@ -57,6 +52,11 @@ export default class Arc extends React.Component {
     const arc2 = `A ${r}, ${r}, 0, ${largerArcFlag2}, 0, ${x3}, ${y3}`;
     const arcEnd = closedPath ? "Z" : "";
     return `${arcStart} ${arc1} ${arc2} ${arcEnd}`;
+  }
+
+  getStyle(props) {
+    const { style, datum, active } = props;
+    return Helpers.evaluateStyle(assign({ stroke: "black", fill: "none" }, style), datum, active);
   }
 
   // Overridden in victory-core-native

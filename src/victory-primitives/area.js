@@ -9,14 +9,14 @@ import * as d3Shape from "d3-shape";
 import CommonProps from "./common-props";
 
 export default class Area extends React.Component {
+  static defaultProps = {
+    groupComponent: <g/>
+  };
+
   static propTypes = {
     ...CommonProps,
     groupComponent: PropTypes.element,
     interpolation: PropTypes.string
-  };
-
-  static defaultProps = {
-    groupComponent: <g/>
   };
 
   componentWillMount() {
@@ -44,22 +44,6 @@ export default class Area extends React.Component {
     return false;
   }
 
-  getLineFunction(props) {
-    const { polar, scale } = props;
-    const interpolation = this.toNewName(props.interpolation);
-    return polar ?
-      d3Shape.lineRadial()
-        .defined(defined)
-        .curve(d3Shape[`${interpolation}Closed`])
-        .angle(getAngleAccessor(scale))
-        .radius(getY0Accessor(scale)) :
-      d3Shape.line()
-        .defined(defined)
-        .curve(d3Shape[interpolation])
-        .x(getXAccessor(scale))
-        .y(getYAccessor(scale));
-  }
-
   getAreaFunction(props) {
     const { polar, scale } = props;
     const interpolation = this.toNewName(props.interpolation);
@@ -76,6 +60,22 @@ export default class Area extends React.Component {
         .x(getXAccessor(scale))
         .y1(getYAccessor(scale))
         .y0(getY0Accessor(scale));
+  }
+
+  getLineFunction(props) {
+    const { polar, scale } = props;
+    const interpolation = this.toNewName(props.interpolation);
+    return polar ?
+      d3Shape.lineRadial()
+        .defined(defined)
+        .curve(d3Shape[`${interpolation}Closed`])
+        .angle(getAngleAccessor(scale))
+        .radius(getY0Accessor(scale)) :
+      d3Shape.line()
+        .defined(defined)
+        .curve(d3Shape[interpolation])
+        .x(getXAccessor(scale))
+        .y(getYAccessor(scale));
   }
 
   calculateAttributes(props) {

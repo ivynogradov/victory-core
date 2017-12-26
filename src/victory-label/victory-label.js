@@ -17,8 +17,11 @@ const defaultStyles = {
 };
 
 export default class VictoryLabel extends React.Component {
+  static defaultProps = {
+    capHeight: 0.71, // Magic number from d3.
+    lineHeight: 1
+  };
   static displayName = "VictoryLabel";
-  static role = "label";
   static propTypes = {
     active: PropTypes.bool,
     angle: PropTypes.oneOfType([
@@ -99,10 +102,7 @@ export default class VictoryLabel extends React.Component {
     ])
   };
 
-  static defaultProps = {
-    capHeight: 0.71, // Magic number from d3.
-    lineHeight: 1
-  };
+  static role = "label";
 
   componentWillMount() {
     this.cacheAttributes(this.calculateAttributes(this.props));
@@ -131,60 +131,6 @@ export default class VictoryLabel extends React.Component {
       return true;
     }
     return false;
-  }
-
-  cacheAttributes(attrs) {
-    const { style, dx, dy, x, y, content, textAnchor, transform, lineHeight } = attrs;
-    this.style = style;
-    this.dx = dx;
-    this.dy = dy;
-    this.x = x;
-    this.y = y;
-    this.content = content;
-    this.textAnchor = textAnchor;
-    this.lineHeight = lineHeight;
-    this.transform = transform;
-  }
-
-  calculateAttributes(props) {
-    const style = this.getStyles(props);
-    const lineHeight = this.getHeight(props, "lineHeight");
-    const textAnchor = props.textAnchor ?
-      Helpers.evaluateProp(props.textAnchor, props.datum) : "start";
-    const content = this.getContent(props);
-    const dx = props.dx ? Helpers.evaluateProp(props.dx, props.datum) : 0;
-    const dy = this.getDy(props, style, content, lineHeight);
-    const transform = this.getTransform(props, style);
-    const x = typeof props.x !== "undefined" ? props.x : this.getPosition(props, "x");
-    const y = typeof props.y !== "undefined" ? props.y : this.getPosition(props, "y");
-    return {
-      style, dx, dy, content, lineHeight, textAnchor, transform, x, y
-    };
-  }
-
-  getPosition(props, dimension) {
-    if (!props.datum) {
-      return 0;
-    }
-    const scaledPoint = Helpers.scalePoint(props, props.datum);
-    return scaledPoint[dimension];
-  }
-
-  getStyle(props, style) {
-    style = style ? merge({}, defaultStyles, style) : defaultStyles;
-    const datum = props.datum || props.data;
-    const baseStyles = Helpers.evaluateStyle(style, datum, props.active);
-    return assign({}, baseStyles, { fontSize: this.getFontSize(baseStyles) });
-  }
-
-  getStyles(props) {
-    return Array.isArray(props.style) ?
-      props.style.map((style) => this.getStyle(props, style)) : [this.getStyle(props, props.style)];
-  }
-
-  getHeight(props, type) {
-    const datum = props.datum || props.data;
-    return Helpers.evaluateProp(props[type], datum, props.active);
   }
 
   getContent(props) {
@@ -219,17 +165,6 @@ export default class VictoryLabel extends React.Component {
     }
   }
 
-  getTransform(props, style) {
-    const { datum, x, y, polar } = props;
-    const defaultAngle = polar ? LabelHelpers.getPolarAngle(props) : 0;
-    const angle = style.angle || props.angle || defaultAngle;
-    const transform = props.transform || style.transform;
-    const transformPart = transform && Helpers.evaluateProp(transform, datum);
-    const rotatePart = angle && { rotate: [angle, x, y] };
-    return transformPart || angle ?
-      Style.toTransformString(transformPart, rotatePart) : undefined;
-  }
-
   getFontSize(style) {
     const baseSize = style && style.fontSize;
     if (typeof baseSize === "number") {
@@ -246,6 +181,71 @@ export default class VictoryLabel extends React.Component {
       }
     }
     return defaultStyles.fontSize;
+  }
+
+  getHeight(props, type) {
+    const datum = props.datum || props.data;
+    return Helpers.evaluateProp(props[type], datum, props.active);
+  }
+
+  getPosition(props, dimension) {
+    if (!props.datum) {
+      return 0;
+    }
+    const scaledPoint = Helpers.scalePoint(props, props.datum);
+    return scaledPoint[dimension];
+  }
+
+  getStyle(props, style) {
+    style = style ? merge({}, defaultStyles, style) : defaultStyles;
+    const datum = props.datum || props.data;
+    const baseStyles = Helpers.evaluateStyle(style, datum, props.active);
+    return assign({}, baseStyles, { fontSize: this.getFontSize(baseStyles) });
+  }
+
+  getStyles(props) {
+    return Array.isArray(props.style) ?
+      props.style.map((style) => this.getStyle(props, style)) : [this.getStyle(props, props.style)];
+  }
+
+  getTransform(props, style) {
+    const { datum, x, y, polar } = props;
+    const defaultAngle = polar ? LabelHelpers.getPolarAngle(props) : 0;
+    const angle = style.angle || props.angle || defaultAngle;
+    const transform = props.transform || style.transform;
+    const transformPart = transform && Helpers.evaluateProp(transform, datum);
+    const rotatePart = angle && { rotate: [angle, x, y] };
+    return transformPart || angle ?
+      Style.toTransformString(transformPart, rotatePart) : undefined;
+  }
+
+  cacheAttributes(attrs) {
+    const { style, dx, dy, x, y, content, textAnchor, transform, lineHeight } = attrs;
+    this.style = style;
+    this.dx = dx;
+    this.dy = dy;
+    this.x = x;
+    this.y = y;
+    this.content = content;
+    this.textAnchor = textAnchor;
+    this.lineHeight = lineHeight;
+    this.transform = transform;
+  }
+
+  calculateAttributes(props) {
+    const style = this.getStyles(props);
+    const lineHeight = this.getHeight(props, "lineHeight");
+    const textAnchor = props.textAnchor ?
+      Helpers.evaluateProp(props.textAnchor, props.datum) : "start";
+    const content = this.getContent(props);
+    const dx = props.dx ? Helpers.evaluateProp(props.dx, props.datum) : 0;
+    const dy = this.getDy(props, style, content, lineHeight);
+    const transform = this.getTransform(props, style);
+    const x = typeof props.x !== "undefined" ? props.x : this.getPosition(props, "x");
+    const y = typeof props.y !== "undefined" ? props.y : this.getPosition(props, "y");
+    return {
+      style, dx, dy, content, lineHeight, textAnchor, transform, x, y
+    };
   }
 
   // Overridden in victory-core-native

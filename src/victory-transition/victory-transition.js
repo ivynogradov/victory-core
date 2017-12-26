@@ -25,8 +25,6 @@ export default class VictoryTransition extends React.Component {
     const child = this.props.children;
     const polar = child.props.polar;
     this.continuous = !polar && child.type && child.type.continuous === true;
-    this.getTransitionState = this.getTransitionState.bind(this);
-    this.getTimer = this.getTimer.bind(this);
   }
 
   componentDidMount() {
@@ -44,42 +42,13 @@ export default class VictoryTransition extends React.Component {
     this.getTimer().stop();
   }
 
-  getTimer() {
-    if (this.context.getTimer) {
-      return this.context.getTimer();
-    }
-    if (!this.timer) {
-      this.timer = new Timer();
-    }
-    return this.timer;
-  }
-
-  getTransitionState(props, nextProps) {
-    const { animate } = props;
-    if (!animate) {
-      return {};
-    } else if (animate.parentState) {
-      const state = animate.parentState;
-      const oldProps = state.nodesWillExit ? props : null;
-      return { oldProps, nextProps };
-    } else {
-      const oldChildren = React.Children.toArray(props.children);
-      const nextChildren = React.Children.toArray(nextProps.children);
-      const {
-        nodesWillExit,
-        nodesWillEnter,
-        childrenTransitions,
-        nodesShouldEnter
-      } = Transitions.getInitialTransitionState(oldChildren, nextChildren);
-      return {
-        nodesWillExit,
-        nodesWillEnter,
-        childrenTransitions,
-        nodesShouldEnter,
-        oldProps: nodesWillExit ? props : null,
-        nextProps
-      };
-    }
+  getClipWidth(props, child) {
+    const getDefaultClipWidth = () => {
+      const range = Helpers.getRange(child.props, "x");
+      return range ? Math.abs(range[1] - range[0]) : props.width;
+    };
+    const clipWidth = this.transitionProps ? this.transitionProps.clipWidth : undefined;
+    return clipWidth !== undefined ? clipWidth : getDefaultClipWidth();
   }
 
   getDomainFromChildren(props, axis) {
@@ -108,12 +77,43 @@ export default class VictoryTransition extends React.Component {
     }
   }
 
-  pickProps() {
-    if (!this.state) {
-      return this.props;
+  getTimer = () => {
+    if (this.context.getTimer) {
+      return this.context.getTimer();
     }
-    return this.state.nodesWillExit ? this.state.oldProps || this.props : this.props;
-  }
+    if (!this.timer) {
+      this.timer = new Timer();
+    }
+    return this.timer;
+  };
+
+  getTransitionState = (props, nextProps) => {
+    const { animate } = props;
+    if (!animate) {
+      return {};
+    } else if (animate.parentState) {
+      const state = animate.parentState;
+      const oldProps = state.nodesWillExit ? props : null;
+      return { oldProps, nextProps };
+    } else {
+      const oldChildren = React.Children.toArray(props.children);
+      const nextChildren = React.Children.toArray(nextProps.children);
+      const {
+        nodesWillExit,
+        nodesWillEnter,
+        childrenTransitions,
+        nodesShouldEnter
+      } = Transitions.getInitialTransitionState(oldChildren, nextChildren);
+      return {
+        nodesWillExit,
+        nodesWillEnter,
+        childrenTransitions,
+        nodesShouldEnter,
+        oldProps: nodesWillExit ? props : null,
+        nextProps
+      };
+    }
+  };
 
   pickDomainProps(props) {
     const parentState = isObject(props.animate) && props.animate.parentState;
@@ -124,13 +124,11 @@ export default class VictoryTransition extends React.Component {
     return this.continuous && this.state.nodesWillExit ? this.state.nextProps || props : props;
   }
 
-  getClipWidth(props, child) {
-    const getDefaultClipWidth = () => {
-      const range = Helpers.getRange(child.props, "x");
-      return range ? Math.abs(range[1] - range[0]) : props.width;
-    };
-    const clipWidth = this.transitionProps ? this.transitionProps.clipWidth : undefined;
-    return clipWidth !== undefined ? clipWidth : getDefaultClipWidth();
+  pickProps() {
+    if (!this.state) {
+      return this.props;
+    }
+    return this.state.nodesWillExit ? this.state.oldProps || this.props : this.props;
   }
 
   render() {

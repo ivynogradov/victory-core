@@ -31,7 +31,7 @@ describe("helpers/selection", () => {
         { eventKey: 0, x: 1, _x: 1, y: 3, _y: 3 }, { eventKey: 1, x: 2, _x: 2, y: 5, _y: 5 }
       ];
       const name = "points";
-      const children = [React.createElement(VictoryLabel, { name, data })];
+      const children = [<VictoryLabel name={name} data={data} />];
       const props = { children };
       const dataset = Selection.getDatasets(props);
       expect(Data.getData).calledOnce.and.returned(expectedReturn);

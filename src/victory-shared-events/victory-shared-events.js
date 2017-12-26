@@ -7,9 +7,19 @@ import Helpers from "../victory-util/helpers";
 import Timer from "../victory-util/timer";
 
 export default class VictorySharedEvents extends React.Component {
-  static displayName = "VictorySharedEvents";
+  static childContextTypes = {
+    getTimer: PropTypes.func
+  };
 
-  static role = "shared-event-wrapper";
+  static contextTypes = {
+    getTimer: PropTypes.func
+  };
+
+  static defaultProps = {
+    groupComponent: <g/>
+  };
+
+  static displayName = "VictorySharedEvents";
 
   static propTypes = {
     children: PropTypes.oneOfType([
@@ -40,24 +50,13 @@ export default class VictorySharedEvents extends React.Component {
     groupComponent: PropTypes.node
   };
 
-  static defaultProps = {
-    groupComponent: <g/>
-  };
-
-  static contextTypes = {
-    getTimer: PropTypes.func
-  };
-
-  static childContextTypes = {
-    getTimer: PropTypes.func
-  };
+  static role = "shared-event-wrapper";
 
   constructor() {
     super();
     this.state = this.state || {};
     this.getScopedEvents = Events.getScopedEvents.bind(this);
     this.getEventState = Events.getEventState.bind(this);
-    this.getTimer = this.getTimer.bind(this);
   }
 
   getChildContext() {
@@ -74,16 +73,6 @@ export default class VictorySharedEvents extends React.Component {
     this.setUpChildren(newProps);
   }
 
-  getTimer() {
-    if (this.context.getTimer) {
-      return this.context.getTimer();
-    }
-    if (!this.timer) {
-      this.timer = new Timer();
-    }
-    return this.timer;
-  }
-
   getAllEvents(props) {
     const components = ["container", "groupComponent"];
     this.componentEvents = Events.getComponentEvents(props, components);
@@ -92,16 +81,6 @@ export default class VictorySharedEvents extends React.Component {
         this.componentEvents.concat(...props.events) : this.componentEvents;
     }
     return props.events;
-  }
-
-  setUpChildren(props) {
-    this.events = this.getAllEvents(props);
-    if (this.events) {
-      this.childComponents = React.Children.toArray(props.children);
-      const childBaseProps = this.getBasePropsFromChildren(this.childComponents);
-      const parentBaseProps = props.container ? props.container.props : {};
-      this.baseProps = assign({}, childBaseProps, { parent: parentBaseProps });
-    }
   }
 
   getBasePropsFromChildren(childComponents) {
@@ -117,6 +96,35 @@ export default class VictorySharedEvents extends React.Component {
 
     const baseProps = Helpers.reduceChildren(childComponents, iteratee);
     return fromPairs(baseProps);
+  }
+
+  getContainer(props, children) {
+    const parents = Array.isArray(this.events) &&
+      this.events.filter((event) => event.target === "parent");
+    const sharedEvents = parents.length > 0 ?
+    {
+      events: parents,
+      getEvents: partialRight(this.getScopedEvents, null, this.baseProps),
+      getEventState: partialRight(this.getEventState, null)
+    } : null;
+    const container = this.props.container || this.props.groupComponent;
+    const role = container.type && container.type.role;
+    const containerProps = container.props || {};
+    const boundGetEvents = Events.getEvents.bind(this);
+    const parentEvents = sharedEvents && boundGetEvents({ sharedEvents }, "parent");
+    const parentProps = defaults(
+      {},
+      this.getEventState("parent", "parent"),
+      containerProps,
+      this.baseProps.parent,
+      { children }
+    );
+    const events = defaults(
+      {}, Events.getPartialEvents(parentEvents, "parent", parentProps), containerProps.events
+    );
+    return role === "container" ?
+      React.cloneElement(container, assign({}, parentProps, { events })) :
+      React.cloneElement(container, events, children);
   }
 
   getNewChildren(props) {
@@ -159,33 +167,24 @@ export default class VictorySharedEvents extends React.Component {
     return alterChildren(this.childComponents);
   }
 
-  getContainer(props, children) {
-    const parents = Array.isArray(this.events) &&
-      this.events.filter((event) => event.target === "parent");
-    const sharedEvents = parents.length > 0 ?
-    {
-      events: parents,
-      getEvents: partialRight(this.getScopedEvents, null, this.baseProps),
-      getEventState: partialRight(this.getEventState, null)
-    } : null;
-    const container = this.props.container || this.props.groupComponent;
-    const role = container.type && container.type.role;
-    const containerProps = container.props || {};
-    const boundGetEvents = Events.getEvents.bind(this);
-    const parentEvents = sharedEvents && boundGetEvents({ sharedEvents }, "parent");
-    const parentProps = defaults(
-      {},
-      this.getEventState("parent", "parent"),
-      containerProps,
-      this.baseProps.parent,
-      { children }
-    );
-    const events = defaults(
-      {}, Events.getPartialEvents(parentEvents, "parent", parentProps), containerProps.events
-    );
-    return role === "container" ?
-      React.cloneElement(container, assign({}, parentProps, { events })) :
-      React.cloneElement(container, events, children);
+  getTimer = () => {
+    if (this.context.getTimer) {
+      return this.context.getTimer();
+    }
+    if (!this.timer) {
+      this.timer = new Timer();
+    }
+    return this.timer;
+  };
+
+  setUpChildren(props) {
+    this.events = this.getAllEvents(props);
+    if (this.events) {
+      this.childComponents = React.Children.toArray(props.children);
+      const childBaseProps = this.getBasePropsFromChildren(this.childComponents);
+      const parentBaseProps = props.container ? props.container.props : {};
+      this.baseProps = assign({}, childBaseProps, { parent: parentBaseProps });
+    }
   }
 
   render() {

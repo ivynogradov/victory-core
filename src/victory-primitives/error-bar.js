@@ -7,6 +7,10 @@ import { assign } from "lodash";
 import CommonProps from "./common-props";
 
 export default class ErrorBar extends React.Component {
+  static defaultProps = {
+    groupComponent: <g/>
+  }
+
   static propTypes = {
     ...CommonProps,
     borderWidth: PropTypes.number,
@@ -25,10 +29,6 @@ export default class ErrorBar extends React.Component {
     x: PropTypes.number,
     y: PropTypes.number
   };
-
-  static defaultProps = {
-    groupComponent: <g/>
-  }
 
   constructor(props) {
     super(props);
@@ -62,11 +62,6 @@ export default class ErrorBar extends React.Component {
   getStyle(props) {
     const { style, datum, active } = props;
     return Helpers.evaluateStyle(assign({ stroke: "black" }, style), datum, active);
-  }
-
-  // Overridden in victory-core-native
-  renderLine(props, style, events) {
-    return <line {...props} style={style} {...events}/>;
   }
 
   renderBorder(props, error, type) {
@@ -111,6 +106,11 @@ export default class ErrorBar extends React.Component {
       error.errorBottom ? this.renderCross(props, error, "Bottom") : null,
       error.errorTop ? this.renderCross(props, error, "Top") : null
     );
+  }
+
+  // Overridden in victory-core-native
+  renderLine(props, style, events) {
+    return <line {...props} style={style} {...events}/>;
   }
 
   render() {

@@ -6,15 +6,17 @@ import PropTypes from "prop-types";
 import { mount } from "enzyme";
 import VictoryTransition from "src/victory-transition/victory-transition";
 
-class TestComponent extends React.Component {
-  render() {
-    return (
-      <text className="foo">
-        {this.props.message[0]}
-      </text>
-    );
-  }
-}
+const TestComponent = (
+  {
+    message,
+  },
+) => {
+  return (
+    <text className="foo">
+      {message[0]}
+    </text>
+  );
+};
 
 TestComponent.propTypes = {
   message: PropTypes.array

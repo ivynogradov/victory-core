@@ -1,7 +1,7 @@
 /* global sinon:false, console */
 /* eslint no-unused-expressions: 0 */
 import PropTypes from "prop-types";
-import { PropTypes as CustomPropTypes } from "src/index";
+import "src/index";
 
 describe("prop-types", () => {
 

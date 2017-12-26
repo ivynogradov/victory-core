@@ -4,7 +4,6 @@ export default class Timer {
   constructor() {
     this.shouldAnimate = true;
     this.subscribers = [];
-    this.loop = this.loop.bind(this);
     this.timer = timer(this.loop);
   }
 
@@ -16,11 +15,11 @@ export default class Timer {
     this.shouldAnimate = true;
   }
 
-  loop() {
+  loop = () => {
     this.subscribers.forEach((s) => {
       s.callback(now() - s.startTime, s.duration);
     });
-  }
+  };
 
   start() {
     this.timer.start();

@@ -7,13 +7,11 @@ import LabelDemo from "./victory-label-demo";
 import LegendDemo from "./victory-legend-demo";
 import TooltipDemo from "./victory-tooltip-demo";
 
-class Home extends React.Component {
-  render() {
-    return (
-      <h1>Pick A Demo</h1>
-    );
-  }
-}
+const Home = props => {
+  return (
+    <h1>Pick A Demo</h1>
+  );
+};
 
 class App extends React.Component {
   constructor() {

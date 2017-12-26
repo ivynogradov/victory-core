@@ -17,22 +17,6 @@ export default class Portal extends React.Component {
     super(props);
     this.map = {};
     this.index = 1;
-    this.portalUpdate = this.portalUpdate.bind(this);
-    this.portalRegister = this.portalRegister.bind(this);
-    this.portalDeregister = this.portalDeregister.bind(this);
-  }
-
-  portalRegister() {
-    return ++this.index;
-  }
-
-  portalUpdate(key, element) {
-    this.map[key] = element;
-    this.forceUpdate();
-  }
-
-  portalDeregister(key) {
-    delete this.map[key];
   }
 
   getChildren() {
@@ -41,6 +25,19 @@ export default class Portal extends React.Component {
       return el ? React.cloneElement(el, { key }) : el;
     });
   }
+
+  portalDeregister = key => {
+    delete this.map[key];
+  };
+
+  portalRegister = () => {
+    return ++this.index;
+  };
+
+  portalUpdate = (key, element) => {
+    this.map[key] = element;
+    this.forceUpdate();
+  };
 
   // Overridden in victory-core-native
   render() {

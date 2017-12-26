@@ -6,6 +6,17 @@ import { victoryInterpolator } from "./util";
 import Timer from "../victory-util/timer";
 
 export default class VictoryAnimation extends React.Component {
+  static contextTypes = {
+    getTimer: PropTypes.func
+  };
+
+  static defaultProps = {
+    data: {},
+    delay: 0,
+    duration: 1000,
+    easing: "quadInOut"
+  };
+
   static displayName = "VictoryAnimation";
 
   static propTypes = {
@@ -31,17 +42,6 @@ export default class VictoryAnimation extends React.Component {
     onEnd: PropTypes.func
   };
 
-  static defaultProps = {
-    data: {},
-    delay: 0,
-    duration: 1000,
-    easing: "quadInOut"
-  };
-
-  static contextTypes = {
-    getTimer: PropTypes.func
-  };
-
   constructor(props) {
     super(props);
     /* defaults */
@@ -58,12 +58,6 @@ export default class VictoryAnimation extends React.Component {
       this.props.data.slice(1) : [];
     /* build easing function */
     this.ease = d3Ease[this.toNewName(this.props.easing)];
-    /*
-      There is no autobinding of this in ES6 classes
-      so we bind functionToBeRunEachFrame to current instance of victory animation class
-    */
-    this.functionToBeRunEachFrame = this.functionToBeRunEachFrame.bind(this);
-    this.getTimer = this.getTimer.bind(this);
   }
 
   componentDidMount() {
@@ -101,7 +95,7 @@ export default class VictoryAnimation extends React.Component {
     }
   }
 
-  getTimer() {
+  getTimer = () => {
     if (this.context.getTimer) {
       return this.context.getTimer();
     }
@@ -109,39 +103,10 @@ export default class VictoryAnimation extends React.Component {
       this.timer = new Timer();
     }
     return this.timer;
-  }
+  };
 
-  toNewName(ease) {
-    // d3-ease changed the naming scheme for ease from "linear" -> "easeLinear" etc.
-    const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1);
-    return `ease${capitalize(ease)}`;
-  }
-
-  /* Traverse the tween queue */
-  traverseQueue() {
-    if (this.queue.length) {
-      /* Get the next index */
-      const data = this.queue[0];
-      /* compare cached version to next props */
-      this.interpolator = victoryInterpolator(this.state.data, data);
-      /* reset step to zero */
-      if (this.props.delay) {
-        setTimeout(() => {
-          this.loopID = this.getTimer().subscribe(
-            this.functionToBeRunEachFrame, this.props.duration
-          );
-        }, this.props.delay);
-      } else {
-        this.loopID = this.getTimer().subscribe(
-          this.functionToBeRunEachFrame, this.props.duration
-        );
-      }
-    } else if (this.props.onEnd) {
-      this.props.onEnd();
-    }
-  }
   /* every frame we... */
-  functionToBeRunEachFrame(elapsed, duration) {
+  functionToBeRunEachFrame = (elapsed, duration) => {
     /*
       step can generate imprecise values, sometimes greater than 1
       if this happens set the state to 1 and return, cancelling the timer
@@ -175,6 +140,36 @@ export default class VictoryAnimation extends React.Component {
         animating: step < 1
       }
     });
+  };
+
+  toNewName(ease) {
+    // d3-ease changed the naming scheme for ease from "linear" -> "easeLinear" etc.
+    const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1);
+    return `ease${capitalize(ease)}`;
+  }
+
+  /* Traverse the tween queue */
+  traverseQueue() {
+    if (this.queue.length) {
+      /* Get the next index */
+      const data = this.queue[0];
+      /* compare cached version to next props */
+      this.interpolator = victoryInterpolator(this.state.data, data);
+      /* reset step to zero */
+      if (this.props.delay) {
+        setTimeout(() => {
+          this.loopID = this.getTimer().subscribe(
+            this.functionToBeRunEachFrame, this.props.duration
+          );
+        }, this.props.delay);
+      } else {
+        this.loopID = this.getTimer().subscribe(
+          this.functionToBeRunEachFrame, this.props.duration
+        );
+      }
+    } else if (this.props.onEnd) {
+      this.props.onEnd();
+    }
   }
 
   render() {

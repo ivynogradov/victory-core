@@ -50,14 +50,6 @@ export default class Point extends React.Component {
     return false;
   }
 
-  calculateAttributes(props) {
-    const { style, datum, active } = props;
-    return {
-      style: Helpers.evaluateStyle(style, datum, active),
-      path: this.getPath(props)
-    };
-  }
-
   getPath(props) {
     const { datum, active, x, y } = props;
     const size = Helpers.evaluateProp(props.size, datum, active);
@@ -77,6 +69,14 @@ export default class Point extends React.Component {
     const symbolFunction = typeof pathFunctions[symbol] === "function" ?
       pathFunctions[symbol] : pathFunctions.circle;
     return symbolFunction(x, y, size);
+  }
+
+  calculateAttributes(props) {
+    const { style, datum, active } = props;
+    return {
+      style: Helpers.evaluateStyle(style, datum, active),
+      path: this.getPath(props)
+    };
   }
 
   // Overridden in victory-core-native

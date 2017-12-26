@@ -5,7 +5,6 @@ import { VictoryAnimation } from "../src/index";
 export default class App extends React.Component {
   constructor() {
     super();
-    this.handleClick = this.handleClick.bind(this);
     this.state = {
       x: 0,
       w: 500,
@@ -15,7 +14,8 @@ export default class App extends React.Component {
       rotate: 0
     };
   }
-  handleClick() {
+
+  handleClick = () => {
     this.setState({
       x: this.state.x === 0 ? 150 : 0,
       w: this.state.w === 500 ? 200 : 500,
@@ -24,7 +24,8 @@ export default class App extends React.Component {
       color: this.state.color === "#3498db" ? "#2ecc71" : "#3498db",
       rotate: this.state.rotate === 0 ? 360 : 0
     });
-  }
+  };
+
   render() {
     return (
       <div>

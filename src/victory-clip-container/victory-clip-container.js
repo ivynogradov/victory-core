@@ -5,8 +5,10 @@ import { assign, defaults, isFunction, isObject, uniqueId } from "lodash";
 import ClipPath from "../victory-primitives/clip-path";
 
 export default class VictoryClipContainer extends React.Component {
+  static defaultProps = {
+    clipPathComponent: <ClipPath/>
+  }
   static displayName = "VictoryClipContainer";
-  static role = "container";
   static propTypes = {
     children: PropTypes.oneOfType([
       PropTypes.arrayOf(PropTypes.node),
@@ -31,14 +33,46 @@ export default class VictoryClipContainer extends React.Component {
     translateY: PropTypes.number
   }
 
-  static defaultProps = {
-    clipPathComponent: <ClipPath/>
-  }
+  static role = "container";
 
   constructor(props) {
     super(props);
     this.clipId = !isObject(props) || typeof props.clipId === "undefined" ?
       uniqueId("victory-clip-") : props.clipId;
+  }
+
+  getClipValue(props, axis) {
+    const clipValues = { x: props.clipWidth, y: props.clipHeight };
+    if (clipValues[axis] !== undefined) {
+      return clipValues[axis];
+    }
+    const range = this.getRange(props, axis);
+    return range ? Math.abs(range[0] - range[1]) || undefined : undefined;
+  }
+
+  getRange(props, axis) {
+    const scale = props.scale || {};
+    if (!scale[axis]) {
+      return undefined;
+    }
+    return isFunction(scale[axis].range) ? scale[axis].range() : undefined;
+  }
+
+  getTranslateValue(props, axis) {
+    const translateValues = { x: props.translateX, y: props.translateY };
+    if (translateValues[axis] !== undefined) {
+      return translateValues[axis];
+    }
+    const range = this.getRange(props, axis);
+    return range ? Math.min(...range) : undefined;
+  }
+
+  // Overridden in victory-core-native
+  renderClipComponent(props, clipId) {
+    return React.cloneElement(
+      props.clipPathComponent,
+      assign({}, props, { clipId })
+    );
   }
 
   // Overridden in victory-core-native
@@ -73,40 +107,6 @@ export default class VictoryClipContainer extends React.Component {
         {children}
       </g>
     );
-  }
-
-  // Overridden in victory-core-native
-  renderClipComponent(props, clipId) {
-    return React.cloneElement(
-      props.clipPathComponent,
-      assign({}, props, { clipId })
-    );
-  }
-
-  getClipValue(props, axis) {
-    const clipValues = { x: props.clipWidth, y: props.clipHeight };
-    if (clipValues[axis] !== undefined) {
-      return clipValues[axis];
-    }
-    const range = this.getRange(props, axis);
-    return range ? Math.abs(range[0] - range[1]) || undefined : undefined;
-  }
-
-  getTranslateValue(props, axis) {
-    const translateValues = { x: props.translateX, y: props.translateY };
-    if (translateValues[axis] !== undefined) {
-      return translateValues[axis];
-    }
-    const range = this.getRange(props, axis);
-    return range ? Math.min(...range) : undefined;
-  }
-
-  getRange(props, axis) {
-    const scale = props.scale || {};
-    if (!scale[axis]) {
-      return undefined;
-    }
-    return isFunction(scale[axis].range) ? scale[axis].range() : undefined;
   }
 
   render() {
